@@ -5,7 +5,7 @@ import android.provider.BaseColumns
 class TaskContract {
     class TaskEntry:BaseColumns {
         companion object {
-            val ID: Any? = null
+            const val ID = "ID"
             const val TABLE = "tasks"
             const val COL_TASK_TITLE = "title"
         }

@@ -14,7 +14,7 @@ import com.learn.todoapp.db.TaskDbHelper
 
 class MainActivity : AppCompatActivity() {
 
-    private val mHelper: TaskDbHelper? = null
+    private val mHelper = TaskDbHelper(this)
     val TAG = "MainActivity"
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -39,12 +39,15 @@ class MainActivity : AppCompatActivity() {
                         val task = taskEditText.text.toString()
                         Log.d(TAG, "Task to add: $task")
                         val db = mHelper?.writableDatabase
+                        Log.d(TAG, "DB: $db")
                         val values = ContentValues()
                         values.put(TaskContract.TaskEntry.COL_TASK_TITLE, task)
-                        db?.insertWithOnConflict(TaskContract.TaskEntry.TABLE,
+                        db?.insertWithOnConflict(
+                            TaskContract.TaskEntry.TABLE,
                             null,
                             values,
-                            SQLiteDatabase.CONFLICT_REPLACE)
+                            SQLiteDatabase.CONFLICT_REPLACE
+                        )
                         db?.close()
                     }
                     .setNegativeButton("Cancel", null)
