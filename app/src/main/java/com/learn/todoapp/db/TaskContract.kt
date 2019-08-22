@@ -5,13 +5,13 @@ import android.provider.BaseColumns
 class TaskContract {
     class TaskEntry:BaseColumns {
         companion object {
-            val _ID: Any? = null
-            val TABLE = "tasks"
-            val COL_TASK_TITLE = "title"
+            val ID: Any? = null
+            const val TABLE = "tasks"
+            const val COL_TASK_TITLE = "title"
         }
     }
     companion object {
-        val DB_NAME = "com.learn.todoapp.db"
-        val DB_VERSION = 1
+        const val DB_NAME = "com.learn.todoapp.db"
+        const val DB_VERSION = 1
     }
 }

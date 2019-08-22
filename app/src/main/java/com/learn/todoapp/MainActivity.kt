@@ -12,7 +12,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.learn.todoapp.db.TaskContract
 import com.learn.todoapp.db.TaskDbHelper
 
-abstract class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity() {
 
     private val mHelper: TaskDbHelper? = null
     val TAG = "MainActivity"
@@ -36,7 +36,7 @@ abstract class MainActivity : AppCompatActivity() {
                     .setMessage("What do you want to do next?")
                     .setView(taskEditText)
                     .setPositiveButton("Add") { _, _ ->
-                        val task= taskEditText.text.toString()
+                        val task = taskEditText.text.toString()
                         Log.d(TAG, "Task to add: $task")
                         val db = mHelper?.writableDatabase
                         val values = ContentValues()
@@ -55,5 +55,4 @@ abstract class MainActivity : AppCompatActivity() {
         return super.onOptionsItemSelected(item)
     }
 }
-
 
