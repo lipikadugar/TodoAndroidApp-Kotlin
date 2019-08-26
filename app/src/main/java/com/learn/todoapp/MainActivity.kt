@@ -160,13 +160,11 @@ class MainActivity : AppCompatActivity() {
                     Toast.makeText(applicationContext, "Todo: \"$task\" already added", Toast.LENGTH_LONG).show()
                     Log.d(TAG, "Duplicate entry found: Task \"$task\" not added")
                     cursor.close()
-                    db.close()
                     return true
                 }
             }
         }
         cursor.close()
-        db.close()
         return false
     }
 }
