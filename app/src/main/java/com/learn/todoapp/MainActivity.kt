@@ -9,12 +9,10 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import android.widget.ArrayAdapter
-import android.widget.EditText
-import android.widget.ListView
-import android.widget.TextView
+import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.isVisible
 import com.learn.todoapp.db.TaskContract
 import com.learn.todoapp.db.TaskDbHelper
 
@@ -64,7 +62,6 @@ class MainActivity : AppCompatActivity() {
             mAdapter!!.addAll(taskList)
             mAdapter!!.notifyDataSetChanged()
         }
-
         cursor.close()
         db.close()
     }
@@ -77,24 +74,27 @@ class MainActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.action_add_task -> {
+                val db = mHelper.writableDatabase
                 val taskEditText = EditText(this)
                 val dialog = AlertDialog.Builder(this)
                     .setTitle("Add a new task")
                     .setMessage("What do you want to do next?")
                     .setView(taskEditText)
-                    .setPositiveButton("Add") { dialog, which ->
+                    .setPositiveButton("Add") { _, _ ->
                         val task = taskEditText.text.toString().trim()
-                        Log.d(TAG, "Task to add: $task")
-                        val db = mHelper.writableDatabase
-                        val values = ContentValues()
-                        values.put(TaskContract.TaskEntry.COL_TASK_TITLE, task)
-                        db?.insertWithOnConflict(
-                            TaskContract.TaskEntry.TABLE,
-                            null,
-                            values,
-                            SQLiteDatabase.CONFLICT_REPLACE
-                        )
-                        db?.close()
+                        Log.d(TAG, "Task to add: \"$task\"")
+                        if (!checkForDuplicateEntry(task)) {
+                            val values = ContentValues()
+                            values.put(TaskContract.TaskEntry.COL_TASK_TITLE, task)
+                            db?.insertWithOnConflict(
+                                TaskContract.TaskEntry.TABLE,
+                                null,
+                                values,
+                                SQLiteDatabase.CONFLICT_REPLACE
+                            )
+                            Log.d(TAG, "Task \"$task\" added")
+                            db?.close()
+                        }
                         updateUI()
                     }
                     .setNegativeButton("Cancel", null)
@@ -110,10 +110,10 @@ class MainActivity : AppCompatActivity() {
         val parent = view.parent as View
         val taskTextView = parent.findViewById<TextView>(R.id.task_title)
         val task = taskTextView.text as String
-
         val db = mHelper.writableDatabase
         db.delete(TaskContract.TaskEntry.TABLE, TaskContract.TaskEntry.COL_TASK_TITLE + " =? ", arrayOf(task))
         db.close()
+        Log.d(TAG, "Task \"$task\" removed")
         updateUI()
     }
 
@@ -121,25 +121,53 @@ class MainActivity : AppCompatActivity() {
         taskEditText: EditText,
         dialog: AlertDialog
     ) {
-        setButtonEnability(taskEditText, dialog)
+        setButtonVisibility(taskEditText, dialog)
         taskEditText.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(p0: Editable?) {
-                setButtonEnability(taskEditText, dialog)
+                setButtonVisibility(taskEditText, dialog)
             }
 
             override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
-                setButtonEnability(taskEditText, dialog)
+                setButtonVisibility(taskEditText, dialog)
             }
 
             override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
-                setButtonEnability(taskEditText, dialog)
+                setButtonVisibility(taskEditText, dialog)
             }
         })
     }
 
-    private fun setButtonEnability(taskEditText: EditText, dialog: AlertDialog) {
-        dialog.getButton(AlertDialog.BUTTON_POSITIVE).isEnabled =
+    private fun setButtonVisibility(taskEditText: EditText, dialog: AlertDialog) {
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE).isVisible =
             taskEditText.text.toString().trim().isNotEmpty()
+    }
+
+    private fun checkForDuplicateEntry(
+        task: String
+    ): Boolean {
+        val db = mHelper.writableDatabase
+        val cursor = db.query(
+            TaskContract.TaskEntry.TABLE,
+            arrayOf(TaskContract.TaskEntry.COL_TASK_TITLE),
+            null, null, null, null, null
+        )
+        val taskList = ArrayList<String>()
+        while (cursor.moveToNext()) {
+            val idx = cursor.getColumnIndex(TaskContract.TaskEntry.COL_TASK_TITLE)
+            taskList.add(cursor.getString(idx))
+            for (item in taskList) {
+                if (task.equals(cursor.getString(idx), true)) {
+                    Toast.makeText(applicationContext, "Todo: \"$task\" already added", Toast.LENGTH_LONG).show()
+                    Log.d(TAG, "Duplicate entry found: Task \"$task\" not added")
+                    cursor.close()
+                    db.close()
+                    return true
+                }
+            }
+        }
+        cursor.close()
+        db.close()
+        return false
     }
 }
 
