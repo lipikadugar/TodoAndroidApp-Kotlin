@@ -7,9 +7,9 @@ import android.database.sqlite.SQLiteOpenHelper
 class TaskDbHelper(context: Context) : SQLiteOpenHelper(context, TaskContract.DB_NAME, null, TaskContract.DB_VERSION) {
 
     override fun onCreate(db: SQLiteDatabase?) {
-        val createTable = "CREATE TABLE " + TaskContract.TaskEntry.TABLE + " ( " +
-                TaskContract.TaskEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                TaskContract.TaskEntry.COL_TASK_TITLE + "TEXT NOT NULL);"
+        val createTable = "CREATE TABLE " + TaskContract.TaskEntry.TABLE + "(" +
+                TaskContract.TaskEntry.ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                TaskContract.TaskEntry.COL_TASK_TITLE + " TEXT NOT NULL);"
 
         db?.execSQL(createTable)
     }
@@ -18,6 +18,4 @@ class TaskDbHelper(context: Context) : SQLiteOpenHelper(context, TaskContract.DB
         db?.execSQL("DROP TABLE IF EXISTS " + TaskContract.TaskEntry.TABLE)
         onCreate(db)
     }
-
-
 }
